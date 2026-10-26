@@ -18,7 +18,6 @@ CRITICAL INVARIANTS:
 """
 
 
-
 def build_synthesis_prompt_payload(
     topic: TopicNode,
     chunks: list[SlideChunk],

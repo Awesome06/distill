@@ -100,7 +100,6 @@ def render_chapter_scaffold(
         ]
     )
 
-
     # Incorporate slide tables or equations if present
     for chunk in chunks:
         for tbl in chunk.tables:
@@ -170,10 +169,7 @@ def render_chapter_scaffold(
             "Use these prompt-answer pairs for self-testing in Anki or verbal rehearsal:",
             "",
             f"**Q1:** What is the primary problem solved by {topic.title}?",
-            (
-                "**A1:** Correctness guarantees under asynchronous delays "
-                "and partial node crashes."
-            ),
+            ("**A1:** Correctness guarantees under asynchronous delays and partial node crashes."),
             "",
             "**Q2:** Distinguish between the safety and liveness invariants of this protocol.",
             (
@@ -191,4 +187,3 @@ def render_chapter_scaffold(
     )
 
     return "\n".join(lines)
-
