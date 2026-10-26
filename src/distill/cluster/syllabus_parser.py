@@ -62,7 +62,6 @@ def parse_syllabus_markdown(content: str) -> CurriculumBackbone:
             mod_title = stripped[3:].strip()
             mod_id = f"mod-{len(modules) + 1:02d}-{_slugify(mod_title)}"
 
-
             # Detect week number if present (e.g. Module 1: Basics (Week 1))
             week_match = re.search(r"(?i)\(week\s*(\d+)\)", mod_title)
             week_num = int(week_match.group(1)) if week_match else None
