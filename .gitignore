@@ -1,0 +1,59 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Antigravity dynamic links (rebuilt per workspace; tracked via .agent/.active-skills.json)
+.agents/skills/*
+!.agents/skills/.gitkeep
+
+# Common language build & runtime artifacts
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+target/
+
+# Local Wiki Knowledge Graph cache & artifacts
+.wiki-cache.json
+**/.wiki-cache.json
+wiki/.wiki-cache.json
+wiki-graph.json
+wiki-graph.html
+wiki-graph.dot
+wiki-graph.mermaid
+
+# Antigravity dynamic cluster leases & runtime state
+.agents/.skill-leases.json
+*.active-skills.json.bak
+
+# Competition video & agent scratch artifacts
+DEMO_VIDEO_SCRIPT.md
+demo-recording/
+scratch/
+
+# Local secrets & credentials
+secrets/
+*.json.key
+*.pem
+
+# Local state database & cache
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data/
+
+# Local agent rules & maintainer taste
+.agents/rules/
+
+
