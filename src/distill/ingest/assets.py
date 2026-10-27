@@ -59,7 +59,12 @@ def carve_shape_asset(
         target_path.write_bytes(blob)
 
     # Relative path from project root
-    rel_path = f"01_raw_markdown/assets/{filename}"
+    if "01_raw_markdown" in output_dir.parts:
+        idx = output_dir.parts.index("01_raw_markdown")
+        rel_parts = output_dir.parts[idx:] + (filename,)
+        rel_path = "/".join(rel_parts)
+    else:
+        rel_path = f"01_raw_markdown/assets/{filename}"
 
     return ExtractedAsset(
         asset_id=asset_id,

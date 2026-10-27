@@ -58,25 +58,43 @@ data/
 
 # Study Compiler Pipeline - Lecture & Ingestion Privacy
 00_inbox_ppts/*
+!00_inbox_ppts/*/
 !00_inbox_ppts/.gitkeep
+!00_inbox_ppts/**/.gitkeep
 !00_inbox_ppts/demo_sample.pptx
+00_inbox_ppts/*/*
+!00_inbox_ppts/*/**/.gitkeep
 
 00_syllabus/*
+!00_syllabus/*/
 !00_syllabus/.gitkeep
+!00_syllabus/**/.gitkeep
 !00_syllabus/demo_syllabus.md
+!00_syllabus/*/*.md
+!00_syllabus/*/*.json
 
 01_raw_markdown/*
+!01_raw_markdown/*/
 !01_raw_markdown/.gitkeep
+!01_raw_markdown/**/.gitkeep
 
 02_curriculum_backbone/*
+!02_curriculum_backbone/*/
 !02_curriculum_backbone/.gitkeep
+!02_curriculum_backbone/**/.gitkeep
+!02_curriculum_backbone/**/coverage_audit.md
 
 03_study_guide/*
+!03_study_guide/*/
 !03_study_guide/.gitkeep
+!03_study_guide/**/.gitkeep
 !03_study_guide/README.md
+!03_study_guide/**/README.md
 
 04_unified_decks/*
+!04_unified_decks/*/
 !04_unified_decks/.gitkeep
+!04_unified_decks/**/.gitkeep
 
 # Incremental build cache
 .cache/

@@ -69,18 +69,25 @@ graph TD
 
 ```text
 distill/
-├── 00_syllabus/                 # Drop syllabus.md / syllabus.json here
-├── 00_inbox_ppts/               # Drop raw .pptx lecture decks here
+├── 00_syllabus/                 # Course syllabi per subject
+│   └── <subject>/               # Drop syllabus.md / syllabus.json here
+├── 00_inbox_ppts/               # Raw lecture decks per subject
+│   └── <subject>/               # Drop raw .pptx lecture decks here
 ├── 01_raw_markdown/             # Spatially ordered slide markdown chunks
-│   └── assets/                  # Extracted high-resolution slide figures
+│   └── <subject>/
+│       └── assets/              # Extracted high-resolution slide figures
 ├── 02_curriculum_backbone/      # Syllabus DAG, alignment matrix, and coverage audit
-│   └── coverage_audit.md        # Report: Covered topics vs whiteboard lecture gaps
+│   └── <subject>/
+│       └── coverage_audit.md    # Report: Covered topics vs whiteboard lecture gaps
 ├── 03_study_guide/              # The core output
-│   ├── README.md                # Course dashboard, roadmap, and cheat sheet
-│   ├── 01_topic_alpha.md        # 4-tier textbook chapter with state traces
-│   └── 02_topic_beta.md
+│   └── <subject>/
+│       ├── README.md            # Course dashboard, roadmap, and cheat sheet
+│       ├── 01_topic_alpha.md    # 4-tier textbook chapter with state traces
+│       └── 02_topic_beta.md
 ├── 04_unified_decks/            # Auto-paginated Marp decks (.marp.md / .pptx)
-├── .cache/                      # Incremental build manifest (.cache/build_manifest.json)
+│   └── <subject>/
+├── .cache/                      # Incremental build manifest per subject
+│   └── <subject>/build_manifest.json
 ├── src/distill/                 # Core Python package
 │   ├── models/                  # Pydantic data contracts (slides, syllabus, manifest)
 │   ├── ingest/                  # Spatial sweep, OpenXML AST, tables, asset carver
@@ -89,7 +96,7 @@ distill/
 │   ├── compile/                 # Marp density budgeting, auto-pagination, compiler
 │   ├── pipeline.py              # Master incremental pipeline coordinator
 │   └── cli.py                   # Click & Rich CLI entrypoint
-└── tests/                       # Comprehensive pytest suite (18 unit tests)
+└── tests/                       # Comprehensive pytest suite (20 unit tests)
 ```
 
 ---
@@ -106,28 +113,42 @@ uv pip install -e ".[dev]"
 
 ### 2. Usage Workflow
 
-1. Drop your course syllabus into `00_syllabus/syllabus.md`.
-2. Drop your lecture presentations into `00_inbox_ppts/`.
-3. Run the complete distillation pipeline:
+1. Initialize a new subject (scaffolds stage folders across root directories):
+```powershell
+uv run distill new-subject CS6450
+```
 
+2. Drop your course syllabus into `00_syllabus/CS6450/syllabus.md`.
+3. Drop your lecture presentations into `00_inbox_ppts/CS6450/`.
+4. Inspect registered subjects:
+```powershell
+uv run distill subjects
+```
+
+5. Run the complete distillation pipeline for all subjects:
 ```powershell
 uv run distill run
+```
+
+Or target a specific subject using `--subject` / `-s`:
+```powershell
+uv run distill run --subject CS6450
 ```
 
 Or execute individual stages:
 
 ```powershell
 # Stage 1: Ingest slide chunks and carve images
-uv run distill ingest
+uv run distill ingest --subject CS6450
 
 # Stage 2: Audit syllabus coverage and identify whiteboard gaps
-uv run distill audit
+uv run distill audit --subject CS6450
 
 # Stage 3 & 4: Synthesize 4-tier study guide chapters
-uv run distill synthesize
+uv run distill synthesize --subject CS6450
 
 # Stage 5: Compile Marp presentation decks
-uv run distill compile
+uv run distill compile --subject CS6450
 ```
 
 ### 3. Running Tests

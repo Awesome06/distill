@@ -105,3 +105,53 @@ def test_pipeline_end_to_end(tmp_path: Path):
     # Check that Marp decks were generated
     marp_files = list((tmp_path / "04_unified_decks").glob("*.marp.md"))
     assert len(marp_files) >= 1
+
+
+def test_pipeline_per_subject_staging(tmp_path: Path):
+    subject = "CS6450"
+    created = DistillPipeline.init_subject_structure(subject, root_dir=tmp_path)
+    assert created["00_inbox_ppts"] == tmp_path / "00_inbox_ppts" / subject
+    assert (tmp_path / "01_raw_markdown" / subject / "assets").exists()
+
+    # 1. Create subject syllabus
+    syllabus_file = tmp_path / "00_syllabus" / subject / "syllabus.md"
+    syllabus_file.write_text(
+        """
+# CS6450: Distributed Systems
+## Module 1: Consensus
+### Raft Consensus
+- Objectives: Leader election and log replication
+""",
+        encoding="utf-8",
+    )
+
+    # 2. Create subject presentation
+    inbox = tmp_path / "00_inbox_ppts" / subject
+    pptx_file = inbox / "lecture_01.pptx"
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    slide.shapes.title.text = "Raft Consensus and Log Invariants"
+    tf = slide.shapes.placeholders[1].text_frame
+    tf.text = "Raft decomposes consensus into leader election and log matching."
+    prs.save(str(pptx_file))
+
+    # 3. Execute pipeline for specific subject
+    pipeline = DistillPipeline(root_dir=tmp_path, subject=subject)
+    pipeline.run_all(force=True)
+
+    # 4. Verify outputs are contained in subject subfolders
+    assert (tmp_path / "01_raw_markdown" / subject / "lecture_01.md").exists()
+    assert (tmp_path / "02_curriculum_backbone" / subject / "coverage_audit.md").exists()
+    assert (tmp_path / "03_study_guide" / subject / "README.md").exists()
+    assert (tmp_path / ".cache" / subject / "build_manifest.json").exists()
+
+    marp_files = list((tmp_path / "04_unified_decks" / subject).glob("*.marp.md"))
+    assert len(marp_files) >= 1
+
+
+def test_pipeline_subject_discovery(tmp_path: Path):
+    DistillPipeline.init_subject_structure("Operating_Systems", root_dir=tmp_path)
+    DistillPipeline.init_subject_structure("Computer_Networks", root_dir=tmp_path)
+
+    discovered = DistillPipeline.list_subjects(root_dir=tmp_path)
+    assert discovered == ["Computer_Networks", "Operating_Systems"]

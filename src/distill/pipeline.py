@@ -26,19 +26,122 @@ from distill.synthesize import synthesize_all_chapters
 class DistillPipeline:
     """End-to-end incremental study compiler pipeline."""
 
-    def __init__(self, root_dir: Path | None = None) -> None:
+    STAGE_DIRS = (
+        "00_inbox_ppts",
+        "00_syllabus",
+        "01_raw_markdown",
+        "02_curriculum_backbone",
+        "03_study_guide",
+        "04_unified_decks",
+    )
+
+    def __init__(
+        self,
+        root_dir: Path | None = None,
+        subject: str | None = None,
+    ) -> None:
         self.root_dir = Path(root_dir) if root_dir else Path.cwd()
-        self.syllabus_dir = self.root_dir / "00_syllabus"
-        self.inbox_dir = self.root_dir / "00_inbox_ppts"
-        self.raw_md_dir = self.root_dir / "01_raw_markdown"
-        self.assets_dir = self.raw_md_dir / "assets"
-        self.backbone_dir = self.root_dir / "02_curriculum_backbone"
-        self.study_guide_dir = self.root_dir / "03_study_guide"
-        self.decks_dir = self.root_dir / "04_unified_decks"
-        self.cache_dir = self.root_dir / ".cache"
-        self.manifest_path = self.cache_dir / "build_manifest.json"
+        self.subject = subject
+
+        if self.subject:
+            self.syllabus_dir = self.root_dir / "00_syllabus" / self.subject
+            self.inbox_dir = self.root_dir / "00_inbox_ppts" / self.subject
+            self.raw_md_dir = self.root_dir / "01_raw_markdown" / self.subject
+            self.assets_dir = self.raw_md_dir / "assets"
+            self.backbone_dir = self.root_dir / "02_curriculum_backbone" / self.subject
+            self.study_guide_dir = self.root_dir / "03_study_guide" / self.subject
+            self.decks_dir = self.root_dir / "04_unified_decks" / self.subject
+            self.cache_dir = self.root_dir / ".cache" / self.subject
+            self.manifest_path = self.cache_dir / "build_manifest.json"
+        else:
+            # Check if there are direct presentation/syllabus files (flat layout)
+            inbox_direct = self.root_dir / "00_inbox_ppts"
+            syllabus_direct = self.root_dir / "00_syllabus"
+            has_direct_files = False
+            if inbox_direct.exists():
+                has_direct_files = any(
+                    f.is_file() and not f.name.startswith(".") for f in inbox_direct.iterdir()
+                )
+            if not has_direct_files and syllabus_direct.exists():
+                has_direct_files = any(
+                    f.is_file() and not f.name.startswith(".") for f in syllabus_direct.iterdir()
+                )
+
+            discovered = self.list_subjects(self.root_dir)
+            if not has_direct_files and discovered:
+                self.subject = discovered[0]
+                self.syllabus_dir = self.root_dir / "00_syllabus" / self.subject
+                self.inbox_dir = self.root_dir / "00_inbox_ppts" / self.subject
+                self.raw_md_dir = self.root_dir / "01_raw_markdown" / self.subject
+                self.assets_dir = self.raw_md_dir / "assets"
+                self.backbone_dir = self.root_dir / "02_curriculum_backbone" / self.subject
+                self.study_guide_dir = self.root_dir / "03_study_guide" / self.subject
+                self.decks_dir = self.root_dir / "04_unified_decks" / self.subject
+                self.cache_dir = self.root_dir / ".cache" / self.subject
+                self.manifest_path = self.cache_dir / "build_manifest.json"
+            else:
+                self.syllabus_dir = self.root_dir / "00_syllabus"
+                self.inbox_dir = self.root_dir / "00_inbox_ppts"
+                self.raw_md_dir = self.root_dir / "01_raw_markdown"
+                self.assets_dir = self.raw_md_dir / "assets"
+                self.backbone_dir = self.root_dir / "02_curriculum_backbone"
+                self.study_guide_dir = self.root_dir / "03_study_guide"
+                self.decks_dir = self.root_dir / "04_unified_decks"
+                self.cache_dir = self.root_dir / ".cache"
+                self.manifest_path = self.cache_dir / "build_manifest.json"
 
         self.manifest = BuildManifest.load_or_init(self.manifest_path)
+
+    @classmethod
+    def list_subjects(cls, root_dir: Path | None = None) -> list[str]:
+        """Discover all subject folders across staging directories."""
+        base = Path(root_dir) if root_dir else Path.cwd()
+        subjects: set[str] = set()
+
+        for stage_name in cls.STAGE_DIRS:
+            stage_path = base / stage_name
+            if stage_path.exists() and stage_path.is_dir():
+                for item in stage_path.iterdir():
+                    if (
+                        item.is_dir()
+                        and not item.name.startswith(".")
+                        and not item.name.startswith("_")
+                        and item.name != "assets"
+                    ):
+                        subjects.add(item.name)
+
+        return sorted(subjects)
+
+    @classmethod
+    def init_subject_structure(
+        cls,
+        subject: str,
+        root_dir: Path | None = None,
+    ) -> dict[str, Path]:
+        """Scaffold stage directories for a subject across all staging folders."""
+        base = Path(root_dir) if root_dir else Path.cwd()
+        created: dict[str, Path] = {}
+
+        for stage in cls.STAGE_DIRS:
+            target_dir = base / stage / subject
+            target_dir.mkdir(parents=True, exist_ok=True)
+            gitkeep = target_dir / ".gitkeep"
+            if not gitkeep.exists():
+                gitkeep.write_text("", encoding="utf-8")
+            created[stage] = target_dir
+
+        assets_dir = base / "01_raw_markdown" / subject / "assets"
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        assets_gitkeep = assets_dir / ".gitkeep"
+        if not assets_gitkeep.exists():
+            assets_gitkeep.write_text("", encoding="utf-8")
+        created["assets"] = assets_dir
+
+        cache_dir = base / ".cache" / subject
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        created[".cache"] = cache_dir
+
+        return created
 
     def run_ingestion(self, force: bool = False) -> list[SlideChunk]:
         """Stage 1: Extract text, tables, OpenXML connectors, and image assets from inbox decks."""
@@ -84,9 +187,15 @@ class DistillPipeline:
             # Fallback to default curriculum backbone if no syllabus dropped yet
             from distill.models.curriculum import ModuleNode
 
+            course_code = self.subject.upper() if self.subject else "COURSE101"
+            course_title = (
+                f"{self.subject.replace('_', ' ').title()} Lecture Series"
+                if self.subject
+                else "General Lecture Series"
+            )
             backbone = CurriculumBackbone(
-                course_code="COURSE101",
-                course_title="General Lecture Series",
+                course_code=course_code,
+                course_title=course_title,
                 modules=[
                     ModuleNode(
                         id="mod-01",

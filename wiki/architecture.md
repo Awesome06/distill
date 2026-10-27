@@ -14,3 +14,4 @@ High-level architecture overview and component boundary definitions.
 ## Upstream & Related Records
 - Root Index: [[wiki/index]] (relates_to)
 - ADR 001 - Initial Architecture: [[wiki/adr/001-initial-architecture]] (implements)
+- ADR 002 - Per-Subject Staging: [[wiki/adr/002-per-subject-staging-structure]] (implements)

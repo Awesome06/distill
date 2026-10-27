@@ -14,3 +14,4 @@ Central repository memory and architectural decision records for this project.
 ## Core Navigation
 - Architecture Overview: [[wiki/architecture]] (relates_to)
 - Architecture Decision Records: [[wiki/adr/001-initial-architecture]] (relates_to)
+- ADR 002 - Per-Subject Staging: [[wiki/adr/002-per-subject-staging-structure]] (relates_to)

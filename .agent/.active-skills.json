@@ -3,6 +3,14 @@
     "initialized_at":  "2026-10-17T04:16:16Z",
     "stack":  "auto",
     "active_skills":  [
-                          "arch/readme-craft"
+                          "arch/readme-craft",
+                          "langs/python-ml",
+                          "db/schema-evolution",
+                          "db/sql-redis",
+                          "ai/llm-structured-output",
+                          "domain/sse-streaming",
+                          "ai/multimodal-slide-ingestion",
+                          "ops/marp-deck-compiler",
+                          "ops/incremental-pipeline-runner"
                       ]
 }
